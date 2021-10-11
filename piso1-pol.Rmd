@@ -1,0 +1,3538 @@
+---
+title: '**<br /> <br /> Datos e indicadores electorales de Uruguay**'
+output:
+  html_document:
+    theme: flatly
+    toc: yes
+    toc_float: yes
+    smooth_scroll: yes
+    toc_depth: 2
+  pdf_document:
+    toc: yes
+    toc_depth: '2'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+
+```{r, echo=FALSE}
+htmltools::img(src = knitr::image_uri("www/logo_umad.png"), 
+               alt = 'logo', 
+               style = 'position:absolute; top:0; right:0; padding:15px;max-width: 45%;')
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(DT))
+suppressPackageStartupMessages(library(kableExtra))
+suppressPackageStartupMessages(library(downloadthis))
+
+# source("R/funciones-pol.R")
+eval(parse("R/funciones-pol.R", encoding="UTF-8"))
+
+```
+
+
+
+<br />
+<br />
+
+<div style="text-align: justify">
+**La [Unidad de Métodos y Acceso a Datos](https://umad.cienciassociales.edu.uy/) (UMAD) (FCS-UdelaR) a partir del [Observatorio Uruguay](https://umad.cienciassociales.edu.uy/observatorio-uruguay/) busca aportar a la difusión de conocimiento respecto a temas de interés general sobre la realidad social, económica y política del Uruguay. Esta serie de documentos tiene como objetivo presentar indicadores clave para el análisis de tendencias históricas del país que esperamos sean de utilidad para las comunidades académicas, los tomadores de decisión y los formadores de opinión, así como el público en general. Se presentan aquí indicadores resultados e indicadores electorales desde el retorno de la democracia.** 
+</div>
+
+<hr style="border:1.5px solid #2c3e50"> </hr>
+
+<br />
+
+
+# **Elecciones Nacionales**
+
+## **Elección de 2019**
+
+**Coyuntura:**
+Finaliza el ciclo de gobierno del Frente Amplio (FA), desplazado por un acuerdo interpartidario que logra imponerse en la segunda vuelta de la elección presidencial de noviembre, aunque por escaso margen. El mapa político electoral y legislativo continúa sin embargo su tendencia a la fragmentación: por primera vez el parlamento tiene siete partidos distintos con representación en la cámara baja. El Partido Nacional (PN) obtiene la presidencia pero sin contar con mayorías propias en el parlamento. Los nuevos partidos que se incorporan son el partido Cabido Abierto (CA) de extrema derecha e impronta militar, el Partido de la Gente (PG) de derecha populista, y el Ecologista Radical Intransigente (PERI). CA obtiene, tras pocos meses de actuación pública, un importante respaldo electoral y representación legislativa en ambas cámaras. 
+
+**Características:**
+Se eligieron presidente y vicepresidente por sistema de segunda vuelta. También se eligieron la totalidad de las bancas del parlamento bicameral (30 senadores, 99 diputados) por representación proporcional.
+
+**Antecedentes y contexto histórico:**
+El Frente Amplio (FA) experimentó el desgaste de 15 años consecutivos en el gobierno, al cabo del cual enfrentaba un balance de gestión deficiente. El país evidenciaba enlentecimiento económico, aumento del déficit fiscal y crecimiento del desempleo, entre otros indicadores desfavorables. En lo político, el FA sufrió además una crisis política interna que terminó con la renuncia del vicepresidente Raúl Sendic en setiembre de 2017 después de acusaciones por irregularidades en su gestión anterior como presidente del ente petrolero estatal ANCAP. Se sumaba a ello un dificultoso proceso de renovación de los liderazgos históricos. En la oposición, por otra parte, se fue afirmando la idea de constituir una coalición multipartidaria que había sido lanzada en mayo de 2019 por Julio Sanguinetti y que en principio podría abarcar al PN, al Partido Colorado (PC) y al Independiente (PI). Esa idea cobró fuerza en los meses siguientes, y terminó concretándose en una “coalición multicolor” posterior a las elecciones de octubre para respaldar la candidatura de Luis Lacalle Pou (PN) en el balotaje. Se integró por PN, PC y PI más los recientemente aparecidos CA y PG. Esos cinco partidos establecieron por escrito un acuerdo programático destinado a oficiar como guía de acción para todo el quinquenio de gobierno.
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p19 <- plot_nacional(2019)
+```
+
+
+```{r}
+download_this(p19,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+
+#### Tabla
+
+```{r}
+t19 <- tab_nacional(2019)
+
+DT::datatable(t19,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2019, 
+                       tipo = "Presidencial") 
+  
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  agrupar_partidos_uy() %>% # Agrupa partidos que no alcanzan el 2%
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Cabildo Abierto" = "#F8BC1E",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 2019 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados por departamento** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=10, fig.height=8, fig.align="center"}
+p19_d <- plot_nacional_xpto(2019)
+```
+
+
+```{r}
+download_this(p19_d,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t19_d <- tab_nacional_xpto(2019)
+
+DT::datatable(t19_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R 
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2019, 
+                       tipo = "Presidencial",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Partido %in% c("Voto Anulado", "Voto en Blanco") ~ "Voto Blanco/Anulado",
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Cabildo Abierto" = "#F8BC1E",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  ylim(0, max(dat_plot$Porcentaje) + 10) +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 2019 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<br />
+<br />
+
+## **Elección de 2014**
+
+**Coyuntura:**
+Tercera elección consecutiva en la que el Frente Amplio (FA) obtiene la presidencia (en segunda vuelta) y la mayoría en ambas Cámaras del Legislativo. Es el primer ciclo de tres elecciones consecutivas obtenidas por un mismo partido desde el periodo 1966-1984 de predominio del Partido Colorado (PC) (elecciones de 1966, 1971 y 1984). El Partido Nacional (PN) consolida su segundo lugar, y el PC el tercero. Aumenta la fragmentación electoral y legislativa, con cinco partidos con representación parlamentaria con el Partido Independiente (PI), que aumenta su representación parlamentaria y consigue una banca en el Senado, y Unidad Popular (AP), una escisión de la izquierda radical formada por desprendimientos del FA y otros grupos independientes que logra una banca en diputados.
+
+**Características:**
+Se eligieron presidente y vicepresidente por sistema de segunda vuelta. También se eligieron la totalidad de las bancas del parlamento bicameral (30 senadores, 99 diputados) por representación proporcional.
+
+**Antecedentes y contexto histórico:**
+El segundo gobierno del FA, que en sus principios fue visto como un "giro a la izquierda", mantuvo sin embargo los lineamientos económicos básicos de la gestión anterior. Hubo algunos avances en materia de la "nueva agenda de derechos" como la despenalización del aborto y la regulación de la producción y venta de cannabis. El periodo estuvo marcado sin embargo por algunos desafíos que -pese al incremento presupuestal aplicado- el gobierno no pudo enderezar, en especial el aumento de la percepción de inseguridad pública y los malos resultados en el sistema educativo.
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p14 <- plot_nacional(2014)
+```
+
+
+```{r}
+download_this(p14,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t14 <- tab_nacional(2014)
+
+DT::datatable(t14,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2014, 
+                       tipo = "Presidencial") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  agrupar_partidos_uy() %>% # Agrupa partidos que no alcanzan el 2%
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido Independiente" = "#663399",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 2014 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=10, fig.height=8, fig.align="center"}
+p14_d <- plot_nacional_xpto(2014)
+```
+
+
+```{r}
+download_this(p14_d,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t14_d <- tab_nacional_xpto(2014)
+
+DT::datatable(t14_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R 
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2014, 
+                       tipo = "Presidencial",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Partido %in% c("Voto Anulado", "Voto en Blanco") ~ "Voto Blanco/Anulado",
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido Independiente" = "#663399",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 2014 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+
+<!-- ====================================================================== -->
+
+<br />
+
+## **Elección de 2009**
+**Coyuntura:**
+El gobierno vuelve a quedar en manos del Frente Amplio (FA), que gana la presidencia en segunda vuelta y confirma su mayoría parlamentaria. Sin embargo, el FA registra por primera vez en su historia un descenso en su votación. El Partido Nacional (PN) vuelve a ser segunda fuerza electoral, al tiempo que se confirma la declinación electoral del Partido Colorado (PC).
+
+**Características:**
+Se eligieron presidente y vicepresidente por sistema de segunda vuelta. También se eligieron la totalidad de las bancas del parlamento bicameral (30 senadores, 99 diputados) por representación proporcional.
+
+**Antecedentes y contexto histórico:**
+El nuevo gobierno de izquierda aplicó un plan de emergencia social destinado a atender las consecuencias económico-sociales más graves de la severa crisis producida en el periodo anterior. También impulsó una reforma fiscal basada en el impuesto progresivo a las rentas personales y la supresión o disminución de otros impuestos indirectos. La economía mostró un crecimiento promovido tanto por políticas de reactivación del empleo, recuperación del poder adquisitivo de los salarios y mejora de su competitividad en el marco del mantenimiento y fortalecimiento de la apertura comercial y de un escenario favorable a nivel internacional.
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p09 <- plot_nacional(2009)
+```
+
+
+```{r}
+download_this(p09,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t09 <- tab_nacional(2009)
+
+DT::datatable(t09,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2009, 
+                       tipo = "Presidencial") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  agrupar_partidos_uy() %>% # Agrupa partidos que no alcanzan el 2%
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido Independiente" = "#663399",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 2009 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=10, fig.height=8, fig.align="center"}
+p09_d <- plot_nacional_xpto(2009)
+```
+
+
+```{r}
+download_this(p09_d,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t09_d <- tab_nacional_xpto(2009)
+
+DT::datatable(t09_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R 
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2009, 
+                       tipo = "Presidencial",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Partido %in% c("Voto Anulado", "Voto en Blanco") ~ "Voto Blanco/Anulado",
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido Independiente" = "#663399",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 2009 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+
+<!-- ====================================================================== -->
+
+## **Elección de 2004**
+**Coyuntura:**
+El Frente Amplio (FA) se convirtió en el primer partido no tradicional en ganar la presidencia. Fueron las primeras elecciones, además, en las que la elección presidencial se dirimió en primera vuelta desde la incorporación de ese mecanismo en 1996. Es tambien la primera vez desde las elecciones de 1966 en que el presidente cuante con la mayoría absoluta de su propio partido en ambas Cámaras del parlamento. El Partido Colorado (PC), que gobernó la mayor parte del tiempo durante el siglo XX, quedó reducido a un magra expresión electoral y por primera vez quedó relegado al tercer lugar en las preferencias del electorado. Aparece un cuarto partido que obtiene representación parlamentaria, el Partido Independiente (PI, de orientación socialdemócrata y social cristiana), en cierto modo como un remanente de lo que fue el Nuevo Espacio (NE) de la década de los años 90.
+
+**Características:**
+Se eligieron presidente y vicepresidente por mayoría absoluta de los votos emitidos, sin necesidad de segunda vuelta. También se eligieron la totalidad de las bancas del parlamento bicameral (30 senadores, 99 diputados) por representación proporcional.
+
+**Antecedentes y contexto histórico:**
+En 2002 Uruguay experimentó la más grave crisis financiera, económica y social de su historia, con graves consecuencias sobre la caída de la producción, del empleo, de las exportaciones y de reservas monetarias, junto al incremento del endeudamiento externo y de los niveles de pobreza e indigencia. Sin embargo, el sistema político mostró madurez para impedir una crisis político-institucional. Aunque algunos indicadores de recuperación económica se empezaron a evidenciar ya en 2003 y 2004, el gobernante PC sufrió un impacto político profundo que lo condenó a un desplome abrupto de votos con respecto a la elección anterior.
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p04 <- plot_nacional(2004)
+```
+
+
+```{r}
+download_this(p04,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t04 <- tab_nacional(2004)
+
+DT::datatable(t04,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2004, 
+                       tipo = "Presidencial") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  agrupar_partidos_uy() %>% # Agrupa partidos que no alcanzan el 2%
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 2004 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=10, fig.height=8, fig.align="center"}
+p04_d <- plot_nacional_xpto(2004)
+```
+
+
+```{r}
+download_this(p04_d,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t04_d <- tab_nacional_xpto(2004)
+
+DT::datatable(t04_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R 
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2004, 
+                       tipo = "Presidencial",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Partido %in% c("Voto Anulado", "Voto en Blanco") ~ "Voto Blanco/Anulado",
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 2004 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 1999**
+**Coyuntura:**
+Primeras elecciones en las que se aplicó el sistema de elección presidencial a dos vueltas en la historia del país. El candidato del Partido Colorado (PC) Jorge Batlle se impuso en el balotaje al que había accedido como el segundo más votado detrás de Tabaré Vázquez del Frente Amplio (FA). Batlle logró el apoyo del Partido Nacional (PN), el otro partido tradicional o fundacional que por primera vez desde que se implantó la elección directa en 1918 quedaba sin un candidato propio definiendo una competencia presidencial. 
+
+**Características:**
+Como consecuencia de la reforma constitucional aprobada en 1996, la elección presidencial se realizó a dos vueltas y con candidaturas únicas por partido (que fueron elegidas en elecciones primarias en abril). Como en la primera vuelta de octubre ninguna fórmula presidencial obtuvo la mayoría absoluta de los votos emitidos, se efectuó un balotaje en noviembre en el que podían participar únicamente las dos fórmulas más votadas. También se separaron las elecciones de cargos nacionales y locales, que hasta entonces se efectuaban en simultáneo. Se eligieron en octubre los integrantes del parlamento bicameral (30 senadores, 99 diputados) por representación proporcional. Las elecciones departamentales fueron fijadas para abril del año siguiente.
+
+**Antecedentes y contexto histórico:**
+El periodo de gobierno anterior estuvo marcado por una genda de reformas que habían quedado pendientes de años anteriores. En lo político, la reforma del sistema de elección presidencial se proponía por una parte evitar los bloqueos políticos que se repetían en los últimos periodos con presidentes minoritarios que no contaban con mayorías en el Legislativo, pero por otra parte constituía una traba para diferir el acceso al gobierno del tercer partido (FA) que venía mostrando un crecimiento electoral sostenido que desafiaba la hegemonía de  los dos partidos tradicionales. Además, se efectivizó por ley una reforma del sistema jubilatorio, agregando al vigente sistema estatal de reparto intergeneracional subsidiado con fondos públicos un nuevo pilar de retiros por basado en cuentas de ahorro y capitalización individual a cargo de administradoras de fondos jubilatorios no estatales. También se concretó una reforma educativa que encontró fuertes resistencias, sobre todo desde los sindicatos y la izquierda política. Algunos indicadores económicos y sociales desmejoraron notoriamente en la segunda mitad de la década de 1990, como por ejemplo las cifras de infantilización de la pobreza. Sobre el final del periodo, en enero de 1999, se produjo una fuerte devaluación en Brasil que impactó gravemente en las exportaciones uruguayas que tenían a ese mercado como uno de sus principales destinos.
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p99 <- plot_nacional(1999)
+```
+
+
+```{r}
+download_this(p99,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t99 <- tab_nacional(1999)
+
+DT::datatable(t99,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1999, 
+                       tipo = "Presidencial") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  agrupar_partidos_uy() %>% # Agrupa partidos que no alcanzan el 2%
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 1999 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=10, fig.height=8, fig.align="center"}
+p99_d <- plot_nacional_xpto(1999)
+```
+
+
+```{r}
+download_this(p99_d,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t99_d <- tab_nacional_xpto(1999)
+
+DT::datatable(t99_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R 
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1999, 
+                       tipo = "Presidencial",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Partido %in% c("Voto Anulado", "Voto en Blanco") ~ "Voto Blanco/Anulado",
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 1999 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 1994**
+**Coyuntura:**
+Los comicios revelaron un escenario electoral dividido en tercios casi empatados. La diferencia entre el ganador (PC) y el Partido Nacional (PN) fue de poco más del 1%, y con respecto al Frente Amplio (FA) de menos de 2,5% del total de votos. En el PC se consolidó una sólida hegemonía interna detrás del sector liderado por el expresidente Julio M. Sanguinetti, que nuclea las tres cuartas partes de los votos del partido. La expresión de izquierda moderada Nuevo Espacio (NE) que se había formado tras una fractura del Frente Amplio (FA), experimentó a su vez dos desprendimientos: un grupo abandonó el partido y realizó un acuerdo para votar dentro del PC (Hugo Batalla fue canddato a vicepresidente en la fórmula colorada encabezada por Sanguinetti), y otros grupos retornaron al FA; un tercer bloque continuó votando bajo la denominación NE.
+
+**Características:**
+Se eligieron simultáneamente todos los cargos electivos de gobierno a nivel nacional y subnacional: fórmula presidencial (presidente y vice) por sistema de mayoría simple (es elegido el candidato más votado dentro del partido que consiga la mayor cantidad de votos), la totalidad de los cargos del Congreso (99 diputados y 30 senadores) por representación proporcional, además de Intendentes (alcaldes) y Juntas Departamentales en cada uno de los 19 Departamentos del país.
+
+**Antecedentes y contexto histórico:**
+Los programas neoliberales del gobierno saliente de Luis A. Lacalle encontraron obstáculos para su implementación. El caso más destacado fue la derogación en 1992, mediante un referéndum promovido por la izquierda y los sindicatos, de los contenidos centrales de una ley de empresas públicas que eliminaba o privatizaba servicios y compañías estatales (telecomunicaciones y combustibles, principalmente). Los sectores del gobernante P. Nacional (PN) tuvieron también dificultades para encontrar un relevo en sus candidaturas, con enfrentamientos internos en los que se cruzaron acusaciones de corrupción contra algunos jerarcas del gobierno. 
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p94 <- plot_nacional(1994)
+```
+
+
+```{r}
+download_this(p94,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t94 <- tab_nacional(1994)
+
+DT::datatable(t94,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1994, 
+                       tipo = "Presidencial") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  agrupar_partidos_uy() %>% # Agrupa partidos que no alcanzan el 2%
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 1994 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+
+```{r, echo=FALSE, fig.width=10, fig.height=8, fig.align="center"}
+p94_d <- plot_nacional_xpto(1994)
+```
+
+
+```{r}
+download_this(p94_d,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t94_d <- tab_nacional_xpto(1994)
+
+DT::datatable(t94_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R 
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1994, 
+                       tipo = "Presidencial",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Partido %in% c("Voto Anulado", "Voto en Blanco") ~ "Voto Blanco/Anulado",
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 1994 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 1989**
+**Coyuntura:**
+Aparición de un nuevo partido, Nuevo Espacio (NE), producto de una separación de sectores socialdemócratas y socialcristianos del Frente Amplio (FA). Esa fractura, empero, no impidió que el FA ganara la Intendencia (alcaldía) de Montevideo, el primer cargo ejecutivo electivo ocupado democráticamente por un partido no tradicional en la historia del país. Al tiempo que la izquierda se fractura, los programas neoliberales se abren camino al gobierno. Los candidatos de los sectores mayoritarios de ambos partidos tradicionales (Luis A. Lacalle del P. Nacional y Jorge Batlle del P. Colorado), entre quienes se decidía la elección presidencial, proponían similares y ambiciosas transformaciones del Estado (privatizaciones, desmonopolizaciones de actividades estatales y supresión de empleos públicos) junto a una agenda de desregulación de los mercados y de mayor apertura comercial.
+
+**Características:**
+Se eligieron simultáneamente todos los cargos electivos de gobierno a nivel nacional y subnacional: fórmula presidencial (presidente y vice) por sistema de mayoría simple (es elegido el candidato más votado dentro del partido que consiga la mayor cantidad de votos), la totalidad de los cargos del Congreso (99 diputados y 30 senadores) por representación proporcional, además de Intendentes (alcaldes) y Juntas Departamentales en cada uno de los 19 Departamentos del país.
+
+**Antecedentes y contexto histórico:**
+Fueron las primeras elecciones post transición. En las anteriores, aún bajo el gobierno dictatorial, algunos partidos y candidaturas permanecían proscriptas (en especial la del principal dirigente del PN, Wilson Ferreira Aldunate, quien falleció a comienzos de 1988). La restauración democrática vino acompañada de una delicada tramitación de los asuntos relacionados con el juzgamiento de los crímenes cometidos durante la dictadura. Tras varas iniciativas que no consiguieron aprobación legislativa, a fines de 1986 el parlamento aprobó una ley que clausuró los juicios contra militares y policías acusados por violaciones a los derechos humanos, como forma de evitar un desacato que parecía inminente. La ley, rechazada por partidos y organizaciones de izquierda pero también por algunos sectores dentro de los partidos tradicionales, fue sometida a referéndum en abril de 1989 y confirmada en las urnas por casi un 60% de los votantes.
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p89 <- plot_nacional(1989)
+```
+
+
+```{r}
+download_this(p89,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t89 <- tab_nacional(1989)
+
+DT::datatable(t89,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1989, 
+                       tipo = "Presidencial") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  agrupar_partidos_uy() %>% # Agrupa partidos que no alcanzan el 2%
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 1989 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+
+```{r, echo=FALSE, fig.width=10, fig.height=8, fig.align="center"}
+p89_d <- plot_nacional_xpto(1989)
+```
+
+
+```{r}
+download_this(p89_d,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t89_d <- tab_nacional_xpto(1989)
+
+DT::datatable(t89_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R 
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1989, 
+                       tipo = "Presidencial",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Partido %in% c("Voto Anulado", "Voto en Blanco") ~ "Voto Blanco/Anulado",
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 1989 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 1984**
+**Coyuntura:**
+Primeras elecciones luego del régimen dictatorial. Fueron comicios transicionales, y por ende marcados por la exclusión de muchas personalidades políticas y sectores significativos de la oposición al régimen. El principal líder del centrista Partido Nacional (PN), Wilson Ferreira Aldunate, no pudo presentarse por estar preso en un cuartel militar. Tampoco se permitió la candidatura del principal dirigente del izquierdista Frente Amplio (FA), Líber Seregni, que había sido liberado de prisión meses antes pero quedó inhabilitado para ocupar cargos. También permanecían inhabilitados algunos partidos integrantes del FA como el Comunista y movimientos afines a la izquierda radical, así como sus dirigentes.
+
+**Características:**
+Se eligieron simultáneamente todos los cargos electivos de gobierno a nivel nacional y subnacional: fórmula presidencial (presidente y vice) por sistema de mayoría simple (es elegido el candidato más votado dentro del partido que consiga la mayor cantidad de votos), la totalidad de los cargos del Congreso (99 diputados y 30 senadores) por representación proporcional, además de Intendentes (alcaldes) y Juntas Departamentales en cada uno de los 19 Departamentos del país.
+
+**Antecedentes y contexto histórico:**
+
+El régimen se había instalado a fines de junio de 1973, cuando el presidente Juan María Bordaberry (electo en 1971 por el Partido Colorado, PC) con apoyo de las Fuerzas Armadas dio un autogolpe y disolvió el Congreso de mayoría opositora. Durante el gobierno de facto se limitó severamente la actividad política, se ilegalizaron todas las organizaciones de izquierda, se aplicó censura previa y se clausuraron órganos de información, se impidió la libertad sindical, se intervino la enseñanza, y se aplicó una sangrienta persecución contra militantes opositores que fueron víctimas de numerosas y graves violaciones a los derechos humanos o debieron exiliarse en el extranjero. Bordaberry fue destituido por los militares en 1976 tras desacuerdos internos con los mandos castrenses. En 1980 los militares elaboraron un proyecto de Constitución de carácter autoritario que resultó rechazado en un plebiscito celebrado en noviembre de ese mismo año. Ese traspié en la estrategia de perpetuación del régimen significó el inicio de una lenta apertura, que prosiguió con la instalación de negociaciones entre los militares y los partidos políticos y culminó en el acuerdo de salida firmado en agosto de 1984. Ese acuerdo posibilitó la realización de las elecciones en noviembre y estableció que las autoridades electas asumieran sus cagos el 15 de febrero (Congreso e Intendencias) y el 1 de marzo (presidente y vice) de 1985.
+
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p84 <- plot_nacional(1984)
+```
+
+
+```{r}
+download_this(p84,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t84 <- tab_nacional(1984)
+
+DT::datatable(t84,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1984, 
+                       tipo = "Presidencial") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  agrupar_partidos_uy() %>% # Agrupa partidos que no alcanzan el 2%
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Union Civica" = "#1F618D",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 1984 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento** 
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+
+
+```{r, echo=FALSE, fig.width=10, fig.height=8, fig.align="center"}
+p84_d <- plot_nacional_xpto(1984)
+```
+
+
+```{r}
+download_this(p84_d,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+
+```{r}
+t84_d <- tab_nacional_xpto(1984)
+
+DT::datatable(t84_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código en R 
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1984, 
+                       tipo = "Presidencial",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Partido %in% c("Voto Anulado", "Voto en Blanco") ~ "Voto Blanco/Anulado",
+    Porcentaje < 2 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Voto Blanco/Anulado", 
+                                          "Otros Partidos")))  
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Union Civica" = "#1F618D",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en la elección de 1984 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<hr style="border:1.5px solid #2c3e50"> </hr>
+
+# **Elecciones Departamentales**
+## **Elección de 2020**
+
+**Coyuntura:**
+En estas elecciones departamentales y municipales se produjeron en circunstancias particulares. No pudieron celebrarse en mayo como estaba previsto constitucionalmente y, pandemia mediante, tuvieron lugar el 27 de setiembre. Se eligieron 19 Gobiernos Departamentales y 125 Gobiernos Municipales. La quinta edición desde la reforma constitucional de 1997 que las separó temporalmente las elecciones nacionales de las departamentales (segundo nivel) y la tercera en que se elige tercer nivel de gobierno (municipios) desde su creación en 2009.
+
+**Características:**
+Se eligieron 19 Intendentes por mayoría simple de los votos válidos. También se eligieron la totalidad de las bancas de las Juntas departamentales (31 por JD senadores, 589 en total) por un sistema de mayoría automática y subsidiariamente de representación proporcional. Para esta elección se crearon 13 nuevos municipios (a iniciativa de los GD) por lo cual hubo 125 elecciones de autoridades municipales. Cinco miembros por municipio, electos por representación proporcional en listas cerradas y bloqueadas, en una hoja de votación separada de la departamental.
+
+**Antecedentes y contexto histórico:**
+De los 19 Gobiernos Departamentales en disputa, solamente en cuatro era previsible un escenario competitivo, dado que tanto los pronósticos de las empresas de Opinión Publica, como los antecedentes daban como definidas 15 Intendencias.
+En este escenario el Partido Nacional (PN) se perfilaba y después lo confirmaría como el gran ganador de la contienda. Como parte de un impulso tras el triunfo electoral a nivel nacional en noviembre de 2019, ganó en tres de las cuatro intendencias en disputa (Paysandú, Río Negro y Rocha). Estas tres intendencias estaban en poder del Frente Amplio (FA). Con estas victorias el PN acumuló 15 de los 19 Gobiernos Departamentales. En tanto la izquierda mantuvo su predominancia en los dos departamentos más poblados (Montevideo y Canelones) y retuvo Salto, al tiempo que el Partido Colorado (PC) mantuvo su histórico bastión de Rivera
+En Montevideo se destaca la consolidación del FA como partido predominante y la presentación de los partidos que conforman la Coalición de gobierno a nivel nacional (Multicolor) bajo el lema Partido Independiente. Por segunda vez consecutiva los partidos fundacionales se presentan juntos, pero a diferencia del Partido de la Concertación (lema ad hoc), bajo el cual blancos y colorados concurrieron en 2015 y con tres candidatos a la Intendencia. Esta vez se compareció bajo el lema P. Independiente (uno de los socios de la CM) y con Laura Raffo (PN) como única candidata.
+
+A nivel municipal, para el PN el saldo es muy favorable, no solo elegir Alcalde en 90 de los 125 municipios del país, sino que también el PN ganó (bajo el paraguas del P. Independiente) en tres municipios de Montevideo. Repitió su triunfo en los municipios CH,y E y sumó el municipio F (que incluye los barrios Flor de Maroñas, Villa Española, Punta de Rieles y Piedras Blancas, entre otros).
+
+En el caso del FA a la derrota en los tres departamentos señalados se suma la debacle en la elección municipal y particularmente en municipios que tienen un peso histórico, simbólico y emocional muy importante para el FA, como Bella Unión (Artigas), San Carlos (Maldonado) o Ciudad del Plata (San José). Al revés de lo ocurrido con el PN, el FA viene perdiendo pie en la consecución de gobierno municipales, 41 en 2010, 37 en 2015 y 32 en 2020. A lo que se suma que solo conquistó municipios en dos departamentos en que no ganó la Intendencia (Juan Lacaze en Colonia y La Paloma en Rocha) y solo cuatro al norte del Rio Negro, en Salto.
+El PC solo conquistó tres municipios. CA la sorpresa de 2019 solo conquistó 6 cargos de ediles y uno de concejal en todo el país. Si bien ayudó al PN decisivamente en algunos triunfos como en la definición por la Intendencia de Rocha.
+
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p20 <- plot_dptal(2015)
+```
+
+```{r}
+download_this(p20,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t20_d <- tab_dptal(2015)
+
+DT::datatable(t20_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2015, 
+                       tipo = "Departamental") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ as.character(Partido))) %>%
+  group_by(Partido) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido de la Concertacion" = "#117A65",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2015 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p20_dpto <- plot_dptal_xpto(2015)
+```
+
+```{r}
+download_this(p20_dpto,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t20_d <- tab_dptal_xpto(2015)
+
+DT::datatable(t20_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2015, 
+                       tipo = "Departamental",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento, scales = "free") +
+  ylim(0, max(dat_ele$Porcentaje) + 5) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido de la Concertacion" = "#117A65",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2015 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+
+## {.toc-ignore .unlisted .unnumbered}
+
+
+## **Elección de 2015**
+
+**Coyuntura:** El comportamiento de los partidos respecto a la utilización del doble voto simultáneo fue diferente según el departamento. En el caso del FA se habilitó por primera vez la múltiple candidatura en Montevideo, y también la permitió en la mayoría de los departamentos, presentando candidatura única solamente en San José y Lavalleja, departamentos en los que a priori tenía baja expectativa. Respecto al PN y PC, no hubo restricciones a sus candidaturas, generando competencia intersectorial en algunos casos. La oferta de candidaturas en todos los departamentos en los tres grandes partidos replicó la estructura de los sectores nacionales.
+
+El PN fue el partido que ganó más gobiernos departamentales, manteniéndose en 12 intendencias. Le siguió el FA, que aumentó de cinco a seis intendencias, en tanto que el PC perdió Salto y bajó de dos a uno.
+
+Aunque el FA se impuso en seis departamentos, solo en dos superó el 50% (Montevideo y Canelones); también se impuso con cierta claridad en Rocha, pero en forma muy ajustada en Salto y Paysandú en el entorno de dos puntos porcentuales y en Río Negro por menos de un punto. El PN, por su parte, obtuvo performances más altas en donde resultó triunfador, solo votando por debajo del 50% en Maldonado, entre el 50 % y 60 % en Artigas, Lavalleja, Colonia y Florida y por encima del 60 % en los restantes siete, alcanzando un aplastante 82% en Flores
+
+**Características:** Se eligieron 19 Intendentes por mayoría simple de los votos válidos. También se eligieron la totalidad de las bancas de las Juntas departamentales (31 por JD senadores, 589 en total) por un sistema de mayoría automática y subsidiariamente de representación proporcional.
+
+Para esta elección se crearon 23 nuevos municipios (11 de creación obligatoria y 12 de creación voluntaria) por lo cual hubo 112 elecciones de autoridades municipales. Cinco miembros por municipio, electos por representación proporcional en listas cerradas y bloqueadas, en hoja de votación separada de la departamental.
+
+**Antecedentes y contexto histórico:** La conformación del Partido de la Concertación, lema bajo el cual comparecieron los Partidos Tradicionales fue la gran novedad de esta elección. En este contexto el Partido Colorado había definido en principio la candidatura de Ney Castillo bajo el nuevo lema conformado. En el Partido Nacional el escenario quedo difuso luego de las internas dado que el diputado Jorge Gandini, quien se había proclamado pre candidato por el sector de Alianza Nacional, no contaba con el apoyo del candidato presidencial Luis Lacalle Pou. Desde un principio se pensó en otra figura de cara al acto eleccionario, entre ellas destacó el nombre del ex presidente de la AUF Sebastián Bauzá.
+
+ Finalmente dentro del Partido de la Concertación la oferta quedó configurada de la siguiente manera: Álvaro Garcé , por el PN, Ricardo Rachetti  designado candidato por el PC y Edgardo Novick , fue el candidato independiente del acuerdo.  En tanto el Plenario del Frente Amplio rompió con la tradición de candidato único en Montevideo, motivada en parte para responder a la Concertación y también al resultado de 2010, y proclamó por unanimidad, a Lucía Topolansky , Daniel Martínez  y Virginia Cardozo  como sus tres candidatos a la Intendencia. 
+
+El FA retuvo la Intendencia, con cuatro puntos por encima de lo que fue considerada una elección desastrosa en 2010 y un poco por encima de la votación de octubre 2014.
+P. Concertación no aumentó los votos respecto a la suma PPTT en MVD de 2014. Lo que si cambió fue el equilibrio entre sus partes. El resultado a la interna de la Concertación marcó que la triunfadora fue la candidatura que venía sumar, pero no a ganar, la candidatura que no representaba al PN ni al PC, pero que es inequívocamente de los Partidos Tradicionales, y que generó una transformación. Renovación de estilo, de discurso, y de forma de hacer política. Novick esgrimió un discurso fuertemente apolítico y a partidario, abogando por suprimir las cuestiones ideológicas y remarcando la importancia de la gestión, exhibiendo una enconada confrontación con el FA y sus candidatos, cuestionando duramente la gestión y a las personas. En definitiva un discurso que el electorado refractario al FA quería escuchar y resultó exitoso. 
+Novick controlaba la bancada más numerosa de la Concertación, nueve de los trece ediles, los ediles blancos quedaron reducidos a cuatro y formalmente no hubo ediles colorados en esta legislatura. Y lo de formalmente cabe porque la mayoría de los ediles de que responden a Novick provenían del PC. 
+
+A nivel municipal, sobre 112 Municipios en disputa el PN triunfó en 68, el FA en 37 y el PC en 7. Otra novedad a destacar es que el FA perdió dos Municipios en Montevideo a manos de la Concertación, el CH , donde era previsible una derrota ya que en 2010 sumados el PN y PC superaron al FA, y también perdió el municipio E 
+Ambos alcaldes pertenecientes al sector TODOS del PN que hizo una campaña muy destacada para lograr ganar en estos municipios. Mientras que el FA si bien abrió la competencia a múltiples candidaturas, cometió errores como no ensobrar la Hoja municipal con la departamental. El dato de la comparación de los votos válidos departamentales (91,9%) y municipales (23,3%) puede destacarse que el porcentaje de voto en blanco y anulado a nivel municipal fue todavía más elevado que en 2010
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p15 <- plot_dptal(2015)
+```
+
+
+```{r}
+download_this(p15,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t15_d <- tab_dptal(2015)
+
+DT::datatable(t15_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2015, 
+                       tipo = "Departamental") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ as.character(Partido))) %>%
+  group_by(Partido) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido de la Concertacion" = "#117A65",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2015 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p15_dpto <- plot_dptal_xpto(2015)
+```
+
+```{r}
+download_this(p15_dpto,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t15_d <- tab_dptal_xpto(2015)
+
+DT::datatable(t15_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2015, 
+                       tipo = "Departamental",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento, scales = "free") +
+  ylim(0, max(dat_ele$Porcentaje) + 5) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido de la Concertacion" = "#117A65",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2015 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 2010**
+
+**Coyuntura:**Las elecciones departamentales del 9 de mayo 2010 sacudieron las internas partidarias por los resultados obtenidos y porque esto significó sustancialmente un reposicionamiento para los tres partidos principales Frente Amplio (FA), Partido Nacional (PN) y Partido Colorado (PC) en el plano territorial subnacional.
+
+Esta es la tercera elección departamental separada de las nacionales, pero además por primera vez acompañada de municipales. Tras retener el gobierno nacional en 2009, tras registra por primera vez en su historia un descenso en su votación, el FA tenía como gran objetivo mantener el desempeño obtenido cinco años antes cuando conquistó ocho (42%) de los diecinueve gobiernos departamentales y si era posible acrecentar el control partidario en el plano departamental. Las elecciones departamentales eran también una oportunidad para confirmar la creciente nacionalización (Jones y Mainwaring, 2003) de la izquierda
+
+
+**Características:** Se eligieron 19 Intendentes por mayoría simple de los votos válidos. También se eligieron la totalidad de las bancas de las Juntas departamentales (31 por JD senadores, 589 en total) por un sistema de mayoría automática y subsidiariamente de representación proporcional.
+
+La ley 18.567 estableció la creación de los municipios electivos, cada uno de ellos integrado por cinco miembros titulares que se eligen en una circunscripción municipal. El primer titular de la lista más votada del lema más votado dentro de la respectiva circunscripción territorial (municipio) que resulte electo y proclamado se denomina Acalde y preside el municipio. Los restantes cuatro miembros se denominan concejales.
+
+El principio de decisión por el cual se elige este órgano es el de representación proporcional. La lista de candidatos a integrantes de cada municipio se incluye en una sola hoja de votación (HV), separada de las listas de candidatos para los cargos departamentales, aunque ambas deben ser introducidas en la urna en un único sobre de votación y deben ser del mismo lema partidario.
+
+Está permitida la acumulación por sublemas y pueden utilizarse sublemas (precediendo a la lista de candidatos) o distintivos. Para adjudicar los cargos obtenidos por cada lema en el municipio se consideran primeramente los sublemas, si se hubieran utilizado, y a las listas que no tuvieren sublema
+
+
+**Antecedentes y contexto histórico:** Una primera mirada sobre los resultados del 9 de mayo de 2010 muestra que el FA sufrió un retroceso ya que perdió los GD de Treinta y Tres, Salto, Paysandú y Florida al tiempo que ganó Artigas y mantuvo Montevideo, Canelones, Maldonado y Rocha, con un saldo negativo en materia de control gubernamental de acuerdo a sus expectativas. Los resultados a la interna del FA arrojaron que los cinco Intendentes pertenecen a distintos sectores: Montevideo (PCU), Canelones (Ind.), Maldonado (AP), Rocha (PS) y Artigas (E609).
+
+El FA pasó de controlar ocho Departamentos que representaban el 73,3% de población y 80% PIB del país, a cinco que representan 64,6% de la población. La reducción de su presencia en el escenario departamental no resultaba tan traumática teniendo en cuenta que controlaba tres departamentos de la denominada zona metropolitana y con mayor población (Montevideo, Canelones y Maldonado). En definitiva, con la excepción de Artigas (situado en el extremo norte del país) su presencia se concentra en el sur del territorio nacional.
+
+El PN, por su parte, siguió creciendo en el interior dominando 12 de los 19 (63%) GD. Su saldo es netamente favorable ya que si bien pierde Artigas, que había arrebatado a los colorados en 2005, recupera Treinta y Tres, Paysandú y Florida, que había perdido cinco años antes a manos del FA. A la interna del PN cinco Intendencias pertenecen a UNA y siete a AN. 
+
+El PC recuperó la Intendencia de Salto que suma a la consolidada Rivera. Estos dos GD pertenecen a los dos sectores mayoritarios, Rivera para Proba y Salto para Vamos Uruguay. Sumados los dos partidos llamados “tradicionales” controlan 14 (74%) de las 19 Intendencias.
+
+Una referencia especial merece el hecho de que por primera vez fueron electas mujeres intendentas: Ana Olivera en Montevideo, Patricia Ayala en Artigas y Adriana Peña en Lavalleja. Sin duda que esta es una novedad importante de estas elecciones que vale destacar porque por primera vez una mujer gana la titularidad de un cargo ejecutivo en Uruguay.
+
+**Elevado voto en Blanco en Montevideo**, aunque el FA volvió a imponerse y logró elegir a su candidata única Ana Olivera, por primera vez dos décadas vio decrecer su porcentaje de votación. Simultáneamente, el porcentaje de votos en blanco o anulados, que registraba guarismos relativamente bajos entre 1984 y 2005, trepó a cifras nunca antes registradas y superó el 13% del total de los sufragios. (Freigedo y Lorenzoni, 2011).
+El segundo hecho novedoso es que el PN obtuvo el segundo lugar con el 19,8% de los votos, y que el PC, por primera vez en la historia, quedó relegado a la tercera posición, con apenas un 18% de los sufragios. El caudal de votos en blanco y anulados, como queda dicho, alcanzó cifras sin precedentes, lo cual puede ser un indicador de la apatía o el desencanto con que buena parte del electorado montevideano siguió la campaña.
+
+Por su parte, a nivel municipal, sobre 89 municipios en disputa, el saldo fue favorable al PN con 42 municipios conquistados, el FA 41 y el PC 6
+De los 19 intendentes electos en 2010, 8 habían sido electos diputados en 2009 y en el caso de Germán Coutinho también senador (Cardarello y Magri 2009).
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p10 <- plot_dptal(2010)
+```
+
+
+```{r}
+download_this(p10,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t10_d <- tab_dptal(2010)
+
+DT::datatable(t10_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2010, 
+                       tipo = "Departamental") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ as.character(Partido))) %>%
+  group_by(Partido) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido de la Concertacion" = "#117A65",
+                               "Voto Blanco/Anulado" = "#696969",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2010 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p10_dpto <- plot_dptal_xpto(2010)
+```
+
+```{r}
+download_this(p10_dpto,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+tab <- tab_dptal_xpto(2010)
+
+DT::datatable(tab,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2010, 
+                       tipo = "Departamental",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento, scales = "free") +
+  ylim(0, max(dat_ele$Porcentaje) + 5) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Partido de la Concertacion" = "#117A65",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2010 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 2005**
+
+**Coyuntura:** Tras su triunfo en octubre 2004 el Frente Amplio (FA) se convirtió en el primer partido no tradicional en ganar la presidencia. Si bien la separación de las elecciones departamentales de las nacionales generó positivo para la independencia de las elecciones subnacionales, efecto ya observado en 2000. No menos cierto es que un triunfo contundente como el del FA 2004 superando el 50% de los votos emitidos en octubre y con elecciones que se producen a poco más de dos meses de asumir un nuevo gobierno en el periodo conocido como la luna de miel, generó también sus consecuencias. Es así que por única vez, el FA gana más GD (ocho) que triunfos en departamentos en la elección nacional 2004 (siete. Entre las ocho intendencias se destaca la sorpresa mayúscula de la victoria en Treinta y Tres.
+
+
+**Características:** Se eligieron 19 Intendentes por mayoría simple de los votos válidos. También se eligieron la totalidad de las bancas de las Juntas departamentales (31 por JD senadores, 589 en total) por un sistema de mayoría automática y subsidiariamente de representación proporcional.
+
+La reforma de 1997 abarcó una amplia variedad de tópicos en materia municipal, pero sin duda las transformaciones más trascendentes que consagró a nivel subnacional, fueron las referidas al sistema electoral. Las mismas son: 1) Separación en el tiempo de las elecciones municipales respecto a las nacionales; 2) Restricción del DVS limitando a tres el número de candidatos a intendente por lema; 3) La elección de convenciones departamentales.
+
+La separación en el tiempo de las elecciones municipales respecto a las nacionales representó un cambio político fundamental. Esta separación permite una mayor autonomía de la materia departamental y también de la local, a partir de la de creación de los municipios o “autoridades locales” electivas. 
+
+La reducción de los candidatos a intendente por lema implica que será nominado candidato quién haya sido más votado por los integrantes del órgano elector (ODD). También lo podrá ser quien lo siguiere en número de votos siempre que superare el treinta por ciento de los sufragios emitidos. Cada convencional o integrante del órgano que haga las veces de Colegio Elector votará por un sólo candidato. La Corte Electoral autorizó a los partidos a llevar hasta tres candidatos. Si el segundo lugar en la Convención resultara en un empate en 30%, dicho órgano podrá nombrar a ambos.
+
+**Antecedentes y contexto histórico:** Entre 1984 y 1994 e incluso extendiendo hasta 2000 los partidos tradicionales controlaban 18 de los 19 GD. A partir de la separación se produce justamente la caída del PC y el crecimiento sostenido del FA. A partir de entonces la competencia en la mayoría de los casos va a producirse entre el PN y el FA.
+
+El FA triunfo zona metropolitana sur y este: Montevideo, Canelones, Maldonado, Rocha Treinta y Tres y Florida y en el litoral oeste Salto y Paysandú. En Montevideo la izquierda aumentó levemente su votación. El PC cae dramáticamente y quedo rezagado en casi un 34% de los votos con respecto al FA, que llevó a Ricardo Ehrlich como candidato único
+
+En estas elecciones  se presentaron diez candidatos a la reelección y once ex intendentes que aspiraban a la reelección mediata. Discriminados por partido, el FA presentó un total de 38 candidatos en todo el país, entre los que no figuraba ningún incumbent y solo contaba con un ex intendente. El PN presentó un total de cuarenta candidatos, dentro de los cuales ocho aspiraban a la reelección inmediata y seis a la mediata. Los candidatos colorados por su parte sumaban treinta y nueve, dos entre ellos incumbents y cuatro “por la vuelta”. Los partidos restantes sumados llegaban en total a quince candidatos, lo que totalizaba ciento treinta y dos postulantes a jefes comunales.
+
+El tercer nivel de gobierno estaba representado por las Juntas Locales que con la excepción de tres casos, eran nombradas por el intendente, cuando decidía formarlas. La única excepción la conformaban tres Juntas Locales Autónomas y Electivas: Río Branco (Cerro Largo), que databa de 1960, Bella Unión (Artigas) y San Carlos (Maldonado) instituidas como tales en 1994. En estos comicios el PN se impuso en Rio Branco y el FA en Bella Unión y San Carlos. 
+
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p05 <- plot_dptal(2005)
+```
+
+
+```{r}
+download_this(p05,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t05_d <- tab_dptal(2005)
+
+DT::datatable(t05_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2005, 
+                       tipo = "Departamental") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ as.character(Partido))) %>%
+  group_by(Partido) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2005 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p05_dpto <- plot_dptal_xpto(2005)
+```
+
+```{r}
+download_this(p05_dpto,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+tab <- tab_dptal_xpto(2005)
+
+DT::datatable(tab,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2005, 
+                       tipo = "Departamental",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento, scales = "free") +
+  ylim(0, max(dat_ele$Porcentaje) + 5) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2005 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 2000**
+
+**Coyuntura:** Primeras elecciones en las que se aplicó el sistema que separó los comicios nacionales de los subnacionales. En ese sentido ya en la primera experiencia del año 2000 parece claro que se produjo un corte bien definido. Hasta entonces con elecciones simultáneas y vinculadas la suerte de los partidos en la arena subnacional estaba atado a su desempeño en la competencia nacional. La elección de mayo de 2000 permitió la recuperación del PN que había tenido una votación muy magra de octubre de 1999, la peor de su historia. Seis meses más tarde el PN se transformó en el gran ganador con trece intendencias en su haber, incluso conquistando el gobierno en aquellos departamentos en los cuales había perdido representación pocos meses antes y mejorando su desempeño en la competencia por GD respecto a 1994.
+
+**Características:** La reforma de 1997 abarcó una amplia variedad de tópicos en materia municipal, pero sin duda las transformaciones más trascendentes que consagró a nivel subnacional, fueron las referidas al sistema electoral. Las mismas son: 1) Separación en el tiempo de las elecciones municipales respecto a las nacionales; 2) Restricción del DVS limitando a tres el número de candidatos a intendente por lema; 3) La elección de convenciones departamentales.
+
+La separación en el tiempo de las elecciones municipales respecto a las nacionales representó un cambio político fundamental. Esta separación permite una mayor autonomía de la materia departamental y también de la local, a partir de la de creación de los municipios o “autoridades locales” electivas. 
+
+La restricción del DVS en la elección del ejecutivo departamental, significó un cambio sustantivo que limitó casos de oferta excesiva, ya que cada partido podía presentar un número ilimitado de candidatos a intendente. La restricción lleva a que usualmente se presenten dos y que pueda llegarse a tres, siempre que se llegue a acuerdo en Organismo Deliberativo Departamental (ODD) que posibilite que los dos candidatos que sigan al más votado empaten en el 30% de los votos del cuerpo. 
+
+En este contexto cobra especial relevancia la elección de los ODD, su importancia radica en que son estás quienes elegirán a los futuros candidatos a la Jefatura departamental de cada partido. Esto obliga a los precandidatos a Intendente a marcar sus votos en las elecciones internas. Para ello deberán realizar una campaña y exhibir no solo sus intenciones de postularse, sino también sus credenciales, negociar apoyos, etc., casi un año antes de los comicios. De hecho se produce un efecto de anticipación la competencia subnacional en las internas un año antes.
+
+La reforma constitucional de 1997 consagró a nivel municipal entre otras modificaciones la reducción a tres candidatos a intendente por lema. La ley estableció que será nominado candidato quién haya sido más votado por los integrantes del órgano elector. También lo podrá ser quien lo siguiere en número de votos siempre que superare el treinta por ciento de los sufragios emitidos. Cada convencional o integrante del órgano que haga las veces de Colegio Elector votará por un sólo candidato. La Corte Electoral autorizó a los partidos a llevar hasta tres candidatos. Si el segundo lugar en la Convención resultara en un empate en 30%, dicho órgano podrá nombrar a ambos.
+
+**Antecedentes y contexto histórico:**
+
+La entrada en vigencia 14 de mayo de 2000 de la enmienda constitucional que desvinculó las elecciones departamentales de las nacionales provocó que el escenario resultante fuera muy diferente al de la elección nacional de 1999. El PN mostro una fuerte recuperación y triunfó en trece 13 departamentos, el PC en se mantuvo al frente de la Intendencia en Canelones, Rivera, Artigas, Salto y Río Negro. El FA que fue el partido más votado en octubre por primera vez en tres departamentos fuera de Montevideo (Canelones, Maldonado y Paysandú) no alcanzó ningún otro GD. 
+
+En la capital de país el FA volvió a aumentar su votación superando esta vez de manera amplia la mayoría absoluta y logrando la reelección de Arana Arana se transformó en el único intendente en reelección. El crecimiento con respecto a la elección anterior fue esta vez de 14%, y su ventaja con respecto al PC llegaba a un 30% de los votos.
+
+Entre otros factores la separación de las elecciones nacionales de las municipales jugó un rol importante en la probabilidad de reelección inmediata de los intendentes y nueve de trece incumbentes lograron su cometido, lo que marca un crecimiento en la tasa de reelección. 
+
+En ese sentido la separación de las elecciones atenuó el efecto de arrastre de la elección nacional, donde la suerte del intendente se ataba a la de su partido. Esto permitió que intendentes con elevados índices de aprobación en sus gestiones, pudieran ser reelectos sin que la debacle de su partido en el ámbito nacional los arrastrase como ocurrió en 1989 a los intendentes del PC. El PN, que tuvo en octubre de 1999 la peor performance electoral de su historia, logró, pocos meses más tarde, una alta tasa de reelección en sus intendentes y recuperó otros dos departamentos caracterizados por la alternancia (Rocha, volvió Riet Correa y Florida) totalizando trece gobiernos departamentales.
+
+El tercer nivel de gobierno estaba representado por las Juntas Locales que con la excepción de tres casos, eran nombradas por el intendente, cuando decidía formarlas. La única excepción la conformaban tres Juntas Locales Autónomas y Electivas: Río Branco (Cerro Largo), que databa de 1960, Bella Unión (Artigas) y San Carlos (Maldonado) instituidas como tales en 1994. En estos comicios el PN se impuso en Rio Branco, El PC en Bella Unión y el FA en San Carlos. 
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p00 <- plot_dptal(2000)
+```
+
+
+```{r}
+download_this(p00,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t00_d <- tab_dptal(2000)
+
+DT::datatable(t00_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2000, 
+                       tipo = "Departamental") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ as.character(Partido))) %>%
+  group_by(Partido) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2000 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p00_dpto <- plot_dptal_xpto(2000)
+```
+
+```{r}
+download_this(p00_dpto,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+tab <- tab_dptal_xpto(2000)
+
+DT::datatable(tab,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 2000, 
+                       tipo = "Departamental",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento, scales = "free") +
+  ylim(0, max(dat_ele$Porcentaje) + 5) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 2000 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 1994**
+
+**Coyuntura:** Los comicios revelaron un escenario electoral dividido en tercios casi empatados. La diferencia entre el ganador (PC) y el Partido Nacional (PN) fue de poco más del 1%, y con respecto al Frente Amplio (FA) de menos de 1,7% de los votos válidos. La recuperación del P. Colorado, que ganó nuevamente la presidencia, y el hecho de que las elecciones fueran simultáneas y vinculadas, fueron determinantes para que varios ex intendentes colorados recuperan sus cargos . Los colorados ganaron en siete departamentos, los blancos en once y el FA volvió a ganar en Montevideo.
+
+
+**Características:** Se eligieron simultáneamente todos los cargos electivos de gobierno a nivel nacional y subnacional en cada uno de los 19 Departamentos del país. El ejecutivo subnacional, el Intendente  se define por el principio mayoría simple que consiste en que el partido con más votos se queda con el cargo, pudiendo presentar más de un candidato por el sistema de doble voto simultáneo (DVS). En la elección del legislativo, Juntas Departamentales, el principio de decisión que establece la Constitución es el de representación proporcional integral, sin embargo el partido triunfador tiene asegurada la mayoría absoluta en el caso de que no la hubiere obtenido en la adjudicación normal de bancas . Dentro del lema mayoritario y entre los lemas restantes el sistema es proporcional. Ambos órganos se eligen en una única hoja de votación (voto conjunto) en un sistema de listas cerradas y bloqueadas.
+
+**Elecciones simultáneas y vinculadas** 
+Entre 1934 y 1994 las elecciones nacionales (Presidente, Vicepresidente y las cámaras legislativas) y municipales (Intendente y Juntas Departamentales) eran simultáneas –se realizaban el mismo día- y estaban vinculadas a nivel de partido, ya que si bien existía una hoja para los cargos nacionales y otra hoja para los cargos municipales, no era posible votar por lemas diferentes en los distintos ámbitos; si esto acontecía el voto se anulaba . Esta simultaneidad y vinculación de la elección provocaba un efecto de “arrastre” de la elección nacional sobre la departamental. La única chance que tenía el elector para no verse obligado a sufragar por el mismo lema en ambos ámbitos era votar en blanco en uno de los niveles, por un lema en la elección nacional y en blanco en la departamental o por un lema en lo departamental y en blanco en lo nacional. 
+
+
+**Antecedentes y contexto histórico:** 
+En 1994 el menor número de intendentes procurando la reelección respecto a 1989 se debe a que muchos ya habían cumplido dos períodos en el cargo  y de los 10 que se presentaron solo tres la obtuvieron . De los siete incumbentes no reelectos, cinco fueron derrotados por ex intendentes que ellos habían desplazado cinco años antes.
+
+El FA repitió su triunfo en Montevideo, esta con una diferencia más abultada, con Mariano Arana como Intendente y comenzó a construir su largo predominio en la capital, obteniendo el triunfo con un crecimiento de más de 7% con respecto a la elección anterior, y aventajando claramente al PC. El PN, el Nuevo Espacio, sucesor del NE coalición (PGP, PDC y UC) y otros partidos menores cayeron en su votación en la capital.
+
+En el interior por primera vez el FA utiliza el DVS para cargos ejecutivos y presenta doble candidatura en dos departamentos, Leandro Dos Santos y Abel A. Gallo en Artigas y E. Lorier Sandro y César A. Falcón en Florida
+
+El tercer nivel de gobierno estaba representado por las Juntas Locales que con la excepción de tres casos, eran nombradas por el intendente, cuando decidía formarlas. La única excepción la conformaban tres Juntas Locales Autónomas y Electivas: Río Branco (Cerro Largo), que databa de 1960, Bella Unión (Artigas) y San Carlos (Maldonado) instituidas como tales en 1994. En estos comicios el PN se impondría en las tres JLAE. 
+
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p94 <- plot_dptal(1994)
+```
+
+
+```{r}
+download_this(p94,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t94_d <- tab_dptal(1994)
+
+DT::datatable(t94_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1994, 
+                       tipo = "Departamental") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ as.character(Partido))) %>%
+  group_by(Partido) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 1994 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p94_dpto <- plot_dptal_xpto(1994)
+```
+
+```{r}
+download_this(p94_dpto,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+tab <- tab_dptal_xpto(1994)
+
+DT::datatable(tab,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1994, 
+                       tipo = "Departamental",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento, scales = "free") +
+  ylim(0, max(dat_ele$Porcentaje) + 5) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 1994 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 1989**
+
+**Coyuntura:** El P. Nacional no solo ganó la elección presidencial llevando a Luis A. Lacalle a la Presidencia de la República, sino que conquistó también 16 gobiernos departamentales; El P. Colorado en tanto bajo su caudal electoral más de 10 puntos porcentuales y sólo pudo triunfar en dos departamentos (Artigas y Río Negro).
+
+El Frente Amplio (FA) alcanzó por primera vez el gobierno departamental de Montevideo, tras obtener un porcentaje de votos apenas superior al que había conseguido en 1984, pero aventajando a su más próximo competidor -el PC- por más de 10% del total de votos, debido a la importante caída de este último tras la complicada gestión en el quinquenio. 
+
+Tabaré Vázquez, candidato único del FA, se convirtió en esos comicios en el primer intendente democrático electo fuera de los Partidos Tradicionales.
+En esas elecciones se produjo además otro resultado destacable: un cuarto partido político el Nuevo Espacio (NE) que reunía al Partido por el Gobierno del Pueblo (PGP) y al Partido Demócrata Cristiano, escindidos del FA pocos meses antes y a la Unión Cívica, logró superar el 10% de los votos. 
+
+**Características:** Se eligieron simultáneamente todos los cargos electivos de gobierno a nivel nacional y subnacional en cada uno de los 19 Departamentos del país. El ejecutivo subnacional, el Intendente  se define por el principio mayoría simple que consiste en que el partido con más votos se queda con el cargo, pudiendo presentar más de un candidato por el sistema de doble voto simultáneo (DVS). En la elección del legislativo, Juntas Departamentales, el principio de decisión que establece la Constitución es el de representación proporcional integral, sin embargo el partido triunfador tiene asegurada la mayoría absoluta en el caso de que no la hubiere obtenido en la adjudicación normal de bancas. Dentro del lema mayoritario y entre los lemas restantes el sistema es proporcional. Ambos órganos se eligen en una única hoja de votación (voto conjunto) en un sistema de listas cerradas y bloqueadas.
+
+**Elecciones simultáneas y vinculadas**
+Entre 1934 y 1994 las elecciones nacionales (Presidente, Vicepresidente y las cámaras legislativas) y municipales (Intendente y Juntas Departamentales) eran simultáneas –se realizaban el mismo día- y estaban vinculadas a nivel de partido, ya que si bien existía una hoja para los cargos nacionales y otra hoja para los cargos municipales, no era posible votar por lemas diferentes en los distintos ámbitos; si esto acontecía el voto se anulaba . Esta simultaneidad y vinculación de la elección provocaba un efecto de “arrastre” de la elección nacional sobre la departamental. La única chance que tenía el elector para no verse obligado a sufragar por el mismo lema en ambos ámbitos era votar en blanco en uno de los niveles, por un lema en la elección nacional y en blanco en la departamental o por un lema en lo departamental y en blanco en lo nacional. 
+
+**Antecedentes y contexto histórico:**
+En las elecciones de 1989 quince intendentes buscaban la reelección, pero solo un colorado pudo lograrlo : Los otros siete intendentes colorados que aspiraban a reelegirse fueron derrotados por candidatos nacionalistas . Sin duda hubo un efecto de “arrastre” de la elección nacional sobre la departamental, con voto vinculado además de simultáneo (Cardarello 2005) la debacle a nivel nacional perjudicó el desempeño de los intendentes colorados. En cambio, de los seis intendentes del PN que competían por su reelección cinco la obtuvieron  y, sólo en Durazno, Luis Apolo fue derrotado por su correligionario Raúl Iturria, quien había electo intendente en 1971.
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p89 <- plot_dptal(1989)
+```
+
+
+```{r}
+download_this(p89,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t89_d <- tab_dptal(1989)
+
+DT::datatable(t89_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1989, 
+                       tipo = "Departamental") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ as.character(Partido))) %>%
+  group_by(Partido) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 1989 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p89_dpto <- plot_dptal_xpto(1989)
+```
+
+```{r}
+download_this(p89_dpto,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+tab <- tab_dptal_xpto(1989)
+
+DT::datatable(tab,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1989, 
+                       tipo = "Departamental",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento, scales = "free") +
+  ylim(0, max(dat_ele$Porcentaje) + 5) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 1989 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+<!-- ====================================================================== -->
+
+## **Elección de 1984**
+
+**Coyuntura:** En las elecciones de 1984, primeras luego de la restauración democrática, el Partido Colorado (PC) no sólo alcanzó la presidencia, sino que conquistó doce Intendencias contra siete del Partido Nacional (PN). Esta fue la única elección desde entonces en la cual el PC triunfó en más departamentos (12) así como la última vez que ganó en departamentos como Montevideo, Maldonado, Soriano y Lavalleja.
+
+**Características:** Se eligieron simultáneamente todos los cargos electivos de gobierno a nivel nacional y subnacional en cada uno de los 19 Departamentos del país. El ejecutivo subnacional, el Intendente  se define por el principio mayoría simple que consiste en que el partido con más votos se queda con el cargo, pudiendo presentar más de un candidato por el sistema de doble voto simultáneo (DVS). En la elección del legislativo, Juntas Departamentales, el principio de decisión que establece la Constitución es el de representación proporcional integral, sin embargo el partido triunfador tiene asegurada la mayoría absoluta en el caso de que no la hubiere obtenido en la adjudicación normal de bancas. Dentro del lema mayoritario y entre los lemas restantes el sistema es proporcional. Ambos órganos se eligen en una única hoja de votación (voto conjunto) en un sistema de listas cerradas y bloqueadas.
+
+**Elecciones simultáneas y vinculadas**
+Entre 1934 y 1994 las elecciones nacionales (Presidente, Vicepresidente y las cámaras legislativas) y municipales (Intendente y Juntas Departamentales) eran simultáneas –se realizaban el mismo día- y estaban vinculadas a nivel de partido, ya que si bien existía una hoja para los cargos nacionales y otra hoja para los cargos municipales, no era posible votar por lemas diferentes en los distintos ámbitos; si esto acontecía el voto se anulaba . Esta simultaneidad y vinculación de la elección provocaba un efecto de “arrastre” de la elección nacional sobre la departamental. La única chance que tenía el elector para no verse obligado a sufragar por el mismo lema en ambos ámbitos era votar en blanco en uno de los niveles, por un lema en la elección nacional y en blanco en la departamental o por un lema en lo departamental y en blanco en lo nacional. 
+
+**Antecedentes y contexto histórico:** Estos comicios mostraron un escenario de elevada competitividad en la disputa por el gobierno departamental de Montevideo. El Partido Colorado (PC) venció por escaso margen al Frente Amplio (FA) que volvió a posicionarse, al igual que en 1971, como el segundo partido más votado, y la diferencia entre el partido ganador y el tercero fue de tan solo 7%
+
+Resultó electo intendente Aquiles Lanza, uno de los tres candidatos colorados que competían en esa elección. Tan solo nueve meses después de asumido el cargo el intendente falleció, quedando al frente del ejecutivo su suplente, Jorge Luis Elizalde  quien se vio forzado a renunciar a comienzos de 1988 a raíz de serias denuncias de irregularidades en su gestión. Fue sustituido en el cargo por Julio Iglesias quien finaliza la gestión del PC al frente de la Intendencia en 1990.
+
+
+<br />
+
+<br />
+
+<div style="text-align: center">
+#### **Resultados total país**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p84 <- plot_dptal(1984)
+```
+
+
+```{r}
+download_this(p84,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+t84_d <- tab_dptal(1984)
+
+DT::datatable(t84_d,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1984, 
+                       tipo = "Departamental") 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ as.character(Partido))) %>%
+  group_by(Partido) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  coord_flip() + 
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 1984 por partido"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") 
+
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<div style="text-align: center">
+#### **Resultados por departamento**
+</div>
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+p84_dpto <- plot_dptal_xpto(1984)
+```
+
+```{r}
+download_this(p84_dpto,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+tab <- tab_dptal_xpto(1984)
+
+DT::datatable(tab,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+# Extraer datos de Boreluy
+dat_ele <- nacional_uy(eleccion = 1984, 
+                       tipo = "Departamental",
+                       por_departamento = TRUE) 
+
+# Ordenar datos
+dat_ele <- dat_ele %>% 
+  mutate(Porcentaje = round(Porcentaje, 1)) %>% 
+  mutate(Partido = case_when(
+    Porcentaje < 5 ~ "Otros Partidos",
+    TRUE ~ Partido)) %>%
+  group_by(Partido, Departamento) %>% 
+  summarise(Porcentaje = sum(Porcentaje),
+            Votos = sum(Votos),
+            Fecha = first(Fecha),
+            Eleccion = first(Eleccion)) %>% 
+  ungroup() %>% 
+  mutate(Partido = fct_reorder(Partido, Porcentaje)) %>% 
+  mutate(Partido = fct_relevel(Partido, c("Otros Partidos")))  
+
+# Tabla
+head(dat_ele)
+
+# Gráfico
+ggplot(data = dat_ele, aes(x = Partido, y = Porcentaje, fill = Partido)) +
+  geom_bar(stat = "identity", color = "black", alpha = .7) +
+  geom_text(aes(label = paste0(Porcentaje, "%")),
+            stat = "identity",
+            hjust = -.5,
+            size = 3) + 
+  coord_flip() +
+  facet_wrap(~ Departamento, scales = "free") +
+  ylim(0, max(dat_ele$Porcentaje) + 5) +
+  scale_fill_manual(values = c("Frente Amplio" = "#013197",
+                               "Partido Nacional" = "#99ccff",
+                               "Partido Colorado" = "#BA0200",
+                               "Nuevo Espacio" = "#2CA015",
+                               "Otros Partidos" = "#A9A9A9")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0),
+        legend.position = "none") +
+  labs(x = "",
+       y = "",
+       title = paste("Porcentaje de votos en las elecciones departamentales de 1984 por partido y departamento"),
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy")
+```
+
+## {.toc-ignore .unlisted .unnumbered}
+
+<hr style="border:1.5px solid #2c3e50"> </hr>
+
+# **Indicadores electorales**
+
+## **Volatilidad de Pedersen**
+El índice de Pedersen es una medida de volatilidad electoral en sistemas de partidos desarrollada por Pedersen (1979). La volatilidad electoral indica en qué medida la proporción de votos de un partido se reasigna a otros partidos de una elección a la siguiente.
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+lista_anios <- c(1984, 1989, 1994, 1999, 2004, 2009, 2014, 2019)
+
+nacional <- lapply(lista_anios, nacional_uy) 
+
+data_esaps <- do.call(rbind, nacional) %>% 
+  as_esaps()
+
+pedersen <- esaps::evolat(data_esaps, "Pedersen") %>% 
+  select(-unit) %>% 
+  rename(eleccion = election,
+         Valor = eVolat)
+
+p1 <- ggplot(pedersen, aes(eleccion, Valor, group = 1)) +
+  geom_line(size = 1, color = "#2c3e50", alpha = 0.5) +
+  geom_point(size = 3, color = "#2c3e50") +
+  labs(x = "", 
+       y = "",
+       title = "Volatilidad de Pedersen",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+
+plot(p1)
+```
+
+
+```{r}
+download_this(p1,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+DT::datatable(pedersen,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+lista_anios <- c(1984, 1989, 1994, 1999, 2004, 2009, 2014, 2019)
+
+nacional <- lapply(lista_anios, nacional_uy) 
+
+data_esaps <- do.call(rbind, nacional) %>% 
+  as_esaps()
+
+pedersen <- esaps::evolat(data_esaps, "Pedersen")
+
+ggplot(pedersen, aes(election, eVolat, group = 1)) +
+  geom_line(size = 1, color = "#2c3e50", alpha = 0.5) +
+  geom_point(size = 3, color = "#2c3e50") +
+  labs(x = "", 
+       y = "",
+       title = "Volatilidad de Pedersen",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+
+## **Volatilidad de Powell y Tucker**
+La volatilidad de Powell y Tucker es una medida de volatilidad electoral en sistemas de partidos desarrollada por Powell y Tucker (2014). La volatilidad electoral indica en qué medida la proporción de votos de un partido se reasigna de una elección a la siguiente a otros partidos. La volatilidad de Powell y Tucker agrega la distinción entre volatilidad producto de la aparición de nuevos partidos y salida de partidos ya existentes (Tipo A), respecto a la volatilidad producto de flujo de votos entre partidos existentes en ambas elecciones (Tipo B)
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+powell <- esaps::evolat(data_esaps, "Powell and Tucker") 
+
+p2 <- ggplot(powell %>% 
+         pivot_longer(volat_A:volat_B,
+                      names_to = "Tipo",
+                      values_to = "Valor"), 
+       aes(as.numeric(election), Valor, color = Tipo)) +
+  geom_line(size = 1,  alpha = 0.5) +
+  geom_point(size = 3) +
+  labs(x = "", 
+       y = "",
+       title = "Volatilidad de Powell y Tucker",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90),
+        legend.position = "bottom") +
+  scale_color_brewer(palette = "Dark2")
+
+plot(p2)
+```
+
+
+```{r}
+download_this(p2,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+DT::datatable(powell,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+lista_anios <- c(1984, 1989, 1994, 1999, 2004, 2009, 2014, 2019)
+
+nacional <- lapply(lista_anios, nacional_uy) 
+
+data_esaps <- do.call(rbind, nacional) %>% 
+  as_esaps()
+
+powell <- esaps::evolat(data_esaps, "Powell and Tucker") 
+
+ggplot(powell %>% 
+         pivot_longer(volat_A:volat_B,
+                      names_to = "Tipo",
+                      values_to = "Valor"), 
+       aes(as.numeric(election), Valor, color = Tipo)) +
+  geom_line(size = 1,  alpha = 0.5) +
+  geom_point(size = 3) +
+  labs(x = "", 
+       y = "",
+       title = "Volatilidad de Powell y Tucker",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90),
+        legend.position = "bottom") +
+  scale_color_brewer(palette = "Dark2")
+```
+
+
+## **Desproporcionalidad electoral - Gallagher**
+Es un índice de desproporcionalidad electoral desarrollado por Gallagher (1991), también es conocido como el índice de mínimos cuadrados. La desproporcionalidad electoral refiere a la desproporcionalidad roducida entre la proporción de votos y la proporción de legisladores obtenidos por cada partido. Este índice mide la desproporcionalidad por elección (a diferencia de por partido)
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+gallagher <- data_esaps %>% 
+  drop_na(votes, seats) %>% 
+  esaps::dispro(method = "Gallagher") 
+  
+p3 <- ggplot(gallagher, aes(election, Gallagher, group = 1)) +
+  geom_line(size = 1, color = "#2c3e50", alpha = 0.5) +
+  geom_point(size = 3, color = "#2c3e50") +
+  labs(x = "", 
+       y = "",
+       title = "Desproporcionalidad electoral - Gallagher",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+plot(p3)
+```
+
+
+```{r}
+download_this(p3,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+DT::datatable(gallagher,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+lista_anios <- c(1984, 1989, 1994, 1999, 2004, 2009, 2014, 2019)
+
+nacional <- lapply(lista_anios, nacional_uy) 
+
+data_esaps <- do.call(rbind, nacional) %>% 
+  as_esaps()
+
+gallagher <- data_esaps %>% 
+  drop_na(votes, seats) %>% 
+  esaps::dispro(method = "Gallagher") 
+  
+ggplot(gallagher, aes(election, Gallagher, group = 1)) +
+  geom_line(size = 1, color = "#2c3e50", alpha = 0.5) +
+  geom_point(size = 3, color = "#2c3e50") +
+  labs(x = "", 
+       y = "",
+       title = "Desproporcionalidad electoral - Gallagher",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+
+```
+
+
+## **Desproporcionalidad electoral - Rae**
+Es un índice de desproporcionalidad electoral desarrollado por Rae (1971). La desproporcionalidad electoral refiere a la diferencia producida entre la proporción de votos y la proporción de legisladores obtenidos por cada partido. El índice de Rae suma la desproporcionalidad de cada partido y la divide por el número de total de partidos, por lo que es una medida de desproporcionalidad por partido.
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+dispro_rae <- data_esaps %>% 
+  drop_na(votes, seats) %>% 
+  esaps::dispro(method = "Rae")
+
+p4 <- ggplot(dispro_rae, aes(election, Rae, group = 1)) +
+  geom_line(size = 1, color = "#2c3e50", alpha = 0.5) +
+  geom_point(size = 3, color = "#2c3e50") +
+  labs(x = "", 
+       y = "",
+       title = "Desproporcionalidad electoral - Rae",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+plot(p4)
+```
+
+
+```{r}
+download_this(p4,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+DT::datatable(dispro_rae,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+lista_anios <- c(1984, 1989, 1994, 1999, 2004, 2009, 2014, 2019)
+
+nacional <- lapply(lista_anios, nacional_uy) 
+
+data_esaps <- do.call(rbind, nacional) %>% 
+  as_esaps()
+
+dispro_rae <- data_esaps %>% 
+  drop_na(votes, seats) %>% 
+  esaps::dispro(method = "Rae")
+
+ggplot(dispro_rae, aes(election, Rae, group = 1)) +
+  geom_line(size = 1, color = "#2c3e50", alpha = 0.5) +
+  geom_point(size = 3, color = "#2c3e50") +
+  labs(x = "", 
+       y = "",
+       title = "Desproporcionalidad electoral - Rae",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+
+## **Número efectivo de partidos**
+Es un indicador desarrollado por Laakso y Taagepera (1979) para identificar el número de partidos en un sistema de partidos, ajustando por su peso. En otras palabras el NEP permite calcular la cantidad de partidos "relevantes". El índice suma la cantidad de partidos, pero le da un mayor peso a los partidos con más votos.
+
+### {.tabset .tabset-fade .tabset-pills}
+
+#### Gráfico
+```{r, echo=FALSE, fig.width=9, fig.height=6, fig.align="center"}
+enp <- data_esaps %>% 
+  esaps::enp() 
+
+p5 <- ggplot(enp, aes(election, enp, group = 1)) +
+  geom_line(size = 1, color = "#2c3e50", alpha = 0.5) +
+  geom_point(size = 3, color = "#2c3e50") +
+  labs(x = "", 
+       y = "",
+       title = "Número Efectivo de Partidos",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+plot(p5)
+```
+
+
+```{r}
+download_this(p5,
+              button_label = "Descargar gráfico",
+              icon = "fa fa-download")
+```
+
+#### Tabla
+```{r}
+DT::datatable(enp,
+              extensions =  'Buttons',
+              options =  list(dom = 'Bfrtip',
+                              buttons = c('copy', 'csv', 'excel', 'print')))
+```
+
+#### Código
+```{r, echo=TRUE, eval=FALSE}
+## Instalar paquetes si es necesario
+# install.packages(tidyverse)
+# install.packages(Boreluy)
+
+# Cargar paquetes
+library(tidyverse)
+library(Boreluy)
+
+lista_anios <- c(1984, 1989, 1994, 1999, 2004, 2009, 2014, 2019)
+
+nacional <- lapply(lista_anios, nacional_uy) 
+
+data_esaps <- do.call(rbind, nacional) %>% 
+  as_esaps()
+
+enp <- data_esaps %>% 
+  esaps::enp() 
+
+ggplot(enp, aes(election, enp, group = 1)) +
+  geom_line(size = 1, color = "#2c3e50", alpha = 0.5) +
+  geom_point(size = 3, color = "#2c3e50") +
+  labs(x = "", 
+       y = "",
+       title = "Número Efectivo de Partidos",
+       caption = "Fuente: Unidad de Métodos y Acceso a Datos (FCS - UdelaR) en base a datos de Boreluy") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+
+<hr style="border:1.5px solid #2c3e50"> </hr>
+
+# **Citar**
+
+<div style="text-align: justify">										
+
+UMAD. (2020). Datos e indicadores electorales en Uruguay. Disponible en [enlace en línea]().
+
+<hr style="border:1.5px solid #2c3e50"> </hr>
+
+# **Referencias bibliográficas**
+
+<div style="text-align: justify">
+
+Gallagher, M. (1991). Proportionality, disproportionality and electoral systems. Electoral studies, 10(1), 33-51.
+
+Laakso, M., & Taagepera, R. (1979). “Effective” number of parties: a measure with application to West Europe. Comparative political studies, 12(1), 3-27.
+
+Lijphart, A., & Aitkin, D. (1994). Electoral systems and party systems: A study of twenty-seven democracies, 1945-1990. Oxford University Press.
+
+Luján, D. I., & Schmidt, N. (2018). Volatilidad electoral y alternancia política a nivel subnacional en Uruguay, 2000-2015. Revista mexicana de ciencias políticas y sociales, 63(232), 219-246.
+
+Mainwaring, S., & Torcal, M. (2005). La institucionalización de los sistemas de partidos y la teoría del sistema partidista después de la tercera ola democratizadora. América Latina Hoy, 41, 141-173.
+
+Pedersen, M. N. (1979). The dynamics of European party systems: changing patterns of electoral volatility. European journal of political research, 7(1), 1-26.
+
+Powell, E. N., & Tucker, J. A. (2014). Revisiting electoral volatility in post-communist countries: New data, new results and new approaches. British Journal of Political Science, 44(1), 123-147.
+
+Rae, D. W. (1967). The political consequences of electoral laws. new Haven: yale university Press.
+
+&nbsp;
+<hr />
+<p style="text-align: center;"> <a href="https://umad.cienciassociales.edu.uy/">Unidad de Métodos y Acceso a Datos</a></p>
+
+<!-- Add icon library -->
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+
+<!-- Add font awesome icons -->
+<!-- <p style="text-align: center;"> -->
+<!--     <a href="https://twitter.com/r_graph_gallery?lang=en" class="fa fa-twitter"></a> -->
+<!--     <a href="https://www.linkedin.com/in/yan-holtz-2477534a/" class="fa fa-linkedin"></a> -->
+<!--     <a href="https://github.com/holtzy/" class="fa fa-github"></a> -->
+<!-- </p> -->
+
+<center>
+![](www/logo_umad.png){width=250px}
+</center>
+
+
+&nbsp;
+
