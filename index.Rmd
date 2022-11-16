@@ -3485,19 +3485,25 @@ ggplot(enp, aes(election, enp, group = 1)) +
   theme(axis.text.x = element_text(angle = 90))
 ```
 
+<br />
+<br />
 
 <hr style="border:1.5px solid #2c3e50"> </hr>
 
-# **Citar**
+### {--}
+
+<hr style="border:1.5px solid #2c3e50"> </hr>
+
+
+# **Referencias**
+
+## **Para citar este documento:** 
 
 <div style="text-align: justify">										
 
-UMAD. (2020). Datos e indicadores electorales en Uruguay. Disponible en [enlace en línea]().
+UMAD. (2020). Datos e indicadores electorales en Uruguay. Disponible en [https://umad-fcs.github.io/Piso-I-Politica/]().
 
-<hr style="border:1.5px solid #2c3e50"> </hr>
-
-
-# **Referencias bibliográficas**
+## **Referencias bibliográficas:** 
 
 <div style="text-align: justify">
 
@@ -3516,6 +3522,9 @@ Pedersen, M. N. (1979). The dynamics of European party systems: changing pattern
 Powell, E. N., & Tucker, J. A. (2014). Revisiting electoral volatility in post-communist countries: New data, new results and new approaches. British Journal of Political Science, 44(1), 123-147.
 
 Rae, D. W. (1967). The political consequences of electoral laws. new Haven: yale university Press.
+
+</div>
+
 
 &nbsp;
 <hr />

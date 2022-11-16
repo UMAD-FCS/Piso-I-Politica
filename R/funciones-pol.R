@@ -16,7 +16,7 @@ coloriza_partidos <- function(vector) {
   
   predefinidos <- c("FA", "PN", "PC", "CA", "PI", "UP", "Cifra", "Equipos", 
                     "Factum", "Interconsult", "Opcion", "Radar", "OtrosP.", "VB/VA",
-                    "Frente Amplio", "Partido Nacional", "Partido Colorado", "Cabildo Abierto", 
+                    "Frente Amplio", "Partido Nacional", "Partido Colorado", "Cabildo Abierto",  "Partido Cabildo Abierto", 
                     "Voto en Blanco", "Voto Anulado", "Nuevo Espacio", "Partido de la Concertacion",
                     "Frente Izquierda de Liberacion", "Partido Democrata Cristiano", "Union Civica", "Partido Socialista",
                     "Partido Independiente", "Unidad Popular", "Voto Blanco/Anulado", "Otros Partidos",
@@ -25,7 +25,7 @@ coloriza_partidos <- function(vector) {
   
   pal <- c("#013197", "#99ccff", "#BA0200", "#F8BC1E", "#663399", "#00913C", "#4C9ED1", 
            "#5C8DCC", "#737AC0", "#8865AC", "#984E91", "#9F3770", "grey35", "grey75",
-           "#013197", "#99ccff", "#BA0200", "#F8BC1E", 
+           "#013197", "#99ccff", "#BA0200", "#F8BC1E", "#F8BC1E", 
            "grey35", "grey75", "#2CA015", "#117A65",
            "#922B21", "#E67E22", "#1F618D", "#239B56",
            "#663399", "#00913C", "gray65", "gray35",
